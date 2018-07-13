@@ -20,21 +20,25 @@ function clearall!(x::CachedBlock{ST, BT}) where {ST, BT <: CompositeBlock}
     x
 end
 
-function cache(server::AbstractCacheServer, x::MatrixBlock, level::Int)
+function cache(server::AbstractCacheServer, x::MatrixBlock, level::Int; recursive=false)
     CachedBlock(server, x, level)
 end
 
 function cache(server::AbstractCacheServer, x::ChainBlock, level::Int; recursive::Bool=false)
     if recursive
         chain = similar(x)
-        for (i, each) in enumerate(block)
-            chain[i] = cache(server, each, level, recursive)
+        for (i, each) in enumerate(x)
+            chain[i] = cache(server, each, level, recursive=recursive)
         end
     else
         chain = x
     end
 
     CachedBlock(server, chain, level)
+end
+
+function cache(server::AbstractCacheServer, x::ControlBlock{N, BT, C, M, T}, level::Int; recursive::Bool=false) where {N, BT, C, M, T}
+    ControlBlock{N}(x.ctrl_qubits, x.vals, cache(server, x.block, level, recursive=recursive), x.addrs)
 end
 
 function cache(server::AbstractCacheServer, block::KronBlock, level::Int; recursive::Bool=false)

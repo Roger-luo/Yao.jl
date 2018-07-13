@@ -55,6 +55,7 @@ function apply!(r::AbstractRegister, c::CachedBlock, signal)
     end
 end
 apply!(r::AbstractRegister, c::CachedBlock) = (r.state .= mat(c) * r; r)
+cache_key(c::CachedBlock) = cache_key(c.block)
 
 parent(c::CachedBlock) = c.block
 similar(c::CachedBlock, level::Int) = CachedBlock(c.server, c.block, level)
